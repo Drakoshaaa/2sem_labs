@@ -1,7 +1,0 @@
-run fast
-run slow
-stop
-run
-
-go slow
-stop
