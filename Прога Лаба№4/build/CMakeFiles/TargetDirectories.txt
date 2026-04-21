@@ -1,0 +1,3 @@
+/home/drakoshaaa/Study/2Sem/Прога/lab4/Прога Лаба№4/build/CMakeFiles/lab4.dir
+/home/drakoshaaa/Study/2Sem/Прога/lab4/Прога Лаба№4/build/CMakeFiles/edit_cache.dir
+/home/drakoshaaa/Study/2Sem/Прога/lab4/Прога Лаба№4/build/CMakeFiles/rebuild_cache.dir
