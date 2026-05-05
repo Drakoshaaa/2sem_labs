@@ -24,13 +24,13 @@ public:
     ~StrList();
     void clear();
 
-
-
     void CalcListSize(unsigned size);
-    void AppendStr(const char* str, unsigned size);
+    void AddStr(const char* str, unsigned size);
     bool isEqual(const StrList& other);
 
     void print();
+
+    StrList& operator=(const StrList &other);
 };
 
 // -------------------------------------------------------------------------------------
@@ -58,7 +58,7 @@ void StrList::CalcListSize(unsigned size){
     sizeoflast = size - blocks * N;
 }
 
-void StrList::AppendStr(const char* str, unsigned size){
+void StrList::AddStr(const char* str, unsigned size){
     CalcListSize(size);
     
     int k = 0;
@@ -129,6 +129,20 @@ void StrList::print(){
         cur = cur->next;
     }
     cout << endl;
+}
+
+StrList& StrList::operator=(const StrList &other){
+    if (this == &other) return *this;
+
+    this->clear();
+
+    StrNode* othercur = other.head;
+    while (othercur != nullptr){
+        this->AddStr(othercur->data, other.fullsize);
+        othercur = othercur->next;
+    }
+
+    return *this;
 }
 
 #endif
