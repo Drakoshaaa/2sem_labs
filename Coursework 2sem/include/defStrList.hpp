@@ -20,7 +20,7 @@ private:
     unsigned listsize;
     unsigned sizeoflast;
 public:
-    StrList() : head(nullptr), listsize(0), sizeoflast(0) {}
+    StrList() : head(nullptr), fullsize(0), listsize(0), sizeoflast(0) {}
     ~StrList();
     void clear();
 
@@ -88,7 +88,7 @@ void StrList::AddStr(const char* str, unsigned size){
             newstr->data[j] = str[k];
         }
         if (j == realN){
-            newstr->data[j] == '\0';
+            newstr->data[j] = '\0';
         }
     }
 }
@@ -128,18 +128,41 @@ void StrList::print(){
         cout << cur->data;
         cur = cur->next;
     }
-    cout << endl;
 }
 
-StrList& StrList::operator=(const StrList &other){
+StrList& StrList::operator=(const StrList &other) {
     if (this == &other) return *this;
 
     this->clear();
 
-    StrNode* othercur = other.head;
-    while (othercur != nullptr){
-        this->AddStr(othercur->data, other.fullsize);
-        othercur = othercur->next;
+    this->fullsize = other.fullsize;
+    this->listsize = other.listsize;
+    this->sizeoflast = other.sizeoflast;
+
+    if (other.head == nullptr) {
+        this->head = nullptr;
+        return *this;
+    }
+
+    StrNode* otherCur = other.head;
+    StrNode* lastNewNode = nullptr;
+
+    while (otherCur != nullptr) {
+        StrNode* newNode = new StrNode;
+        
+        for (int j = 0; j <= N; j++) {
+            newNode->data[j] = otherCur->data[j];
+        }
+        newNode->next = nullptr;
+
+        if (this->head == nullptr) {
+            this->head = newNode;
+        } else {
+            lastNewNode->next = newNode;
+        }
+        
+        lastNewNode = newNode;
+        otherCur = otherCur->next;
     }
 
     return *this;
