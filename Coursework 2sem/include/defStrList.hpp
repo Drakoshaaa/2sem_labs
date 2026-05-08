@@ -24,8 +24,9 @@ public:
     ~StrList();
     void clear();
 
+    unsigned CalcStrSize(const char* str);
     void CalcListSize(unsigned size);
-    void AddStr(const char* str, unsigned size);
+    void AddStr(const char* str);
     bool isEqual(const StrList& other);
 
     void print();
@@ -50,6 +51,15 @@ void StrList::clear(){
     }
 }
 
+unsigned StrList::CalcStrSize(const char* str){
+    int size = 0;
+
+    while (str[size] != '\0') {
+        size++;
+    }
+    return size;
+}
+
 void StrList::CalcListSize(unsigned size){
     unsigned blocks = size / N;
 
@@ -58,7 +68,8 @@ void StrList::CalcListSize(unsigned size){
     sizeoflast = size - blocks * N;
 }
 
-void StrList::AddStr(const char* str, unsigned size){
+void StrList::AddStr(const char* str){
+    unsigned size = CalcStrSize(str);
     CalcListSize(size);
     
     int k = 0;
