@@ -6,43 +6,34 @@ using namespace std;
 #include "const.hpp"
 #include "defStrList.hpp"
 #include "defCollector.hpp"
-// #include "defExchangeModule.hpp"
+#include "defExchangeModule.hpp"
 #include "defParser.hpp"
 
 int main(){    
-    // Mark m1;
-    // m1.name.AddStr("Penny Black", 11);
-    // m1.topic.AddStr("Queen Victoria", 14);
-    // m1.value = 250.5;
-    // m1.amount = 2;
-    // m1.isCancel = false;
-    // m1.isTradeable = true;
+    Collector mainCol;
+
+    if (!Parser(mainCol, 0)) cout << "\nПроизошла ошибка при чтении или октрытии файла.";
+
+    mainCol.print();
+    cout << endl << endl << "\nОбщая стоимость коллекции: " << mainCol.GetTotalValue();
     
-    // Mark m2;
-    // m2.name.AddStr("Penny Blac", 11);
-    // m2.topic.AddStr("Queen Victoria", 14);
-    // m2.value = 230.5;
-    // m2.amount = 1;
-    // m2.isCancel = false;
-    // m2.isTradeable = true;
 
-    // Mark m3;
-    // m3.name.AddStr("Penny Black", 11);
-    // m3.topic.AddStr("Queen Victoria", 14);
-    // m3.value = 210.5;
-    // m3.amount = 1;
-    // m3.isCancel = false;
-    // m3.isTradeable = true;
+    for (int i = 1; i <= TRADES; i++){
+        Collector offerCol;
+        if (!Parser(offerCol, i)) cout << "\nПроизошла ошибка при чтении или октрытии файла №" << i;
 
-    // ----------------------------------------
+        offerCol.print();
 
-    Collector Col1;
+        ExchangeManager exchanger;
 
-    if (!Parser(Col1, 0)) cout << "\nПроизошла ошибка при чтении или октрытии файла.";
-
-    Col1.print();
-
-    cout << endl << endl << "Общая стоимость коллекции: " << Col1.GetTotalValue();
+        if (exchanger.Process(mainCol, offerCol)){
+            mainCol.print();
+        }
+        else {
+            cout << "\n Не было найдено подходящих марок для обмена.";
+        }
+        
+    }
     
 }
 

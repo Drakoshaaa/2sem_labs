@@ -1,0 +1,15 @@
+[STAMP]
+Name=Some Mark
+Topic=Aviation
+Value=350.00
+IsCancelled=0
+Amount=1
+IsTradeable=1
+
+[STAMP]
+Name=Another Mark
+Topic=Aviation
+Value=500.00
+IsCancelled=0
+Amount=1
+IsTradeable=1

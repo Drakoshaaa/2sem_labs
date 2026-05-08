@@ -25,12 +25,13 @@ public:
 
     MarkNode* GetHead();
     float GetTotalValue();
+    unsigned GetSize();
 
     void PushFront();
     void AddMark(const Mark &mark);
-    void DeleteMark(unsigned i);
     bool DuplicateCheck(const Mark &mark);
     bool WrongMark(const Mark &mark);
+    void DeleteEmpty();
 
     void print();
 
@@ -59,12 +60,18 @@ MarkNode* Collector::GetHead(){
     return head;
 }
 
+unsigned Collector::GetSize(){
+    return size;
+}
+
 float Collector::GetTotalValue(){
     float temp = 0;
 
     MarkNode* cur = head;
     while(cur != nullptr){
-        temp += cur->data.value * cur->data.amount;
+        if (cur->data.isTradeable){
+            temp += cur->data.value * cur->data.amount;
+        }
 
         cur = cur->next;
     }
@@ -100,21 +107,6 @@ void Collector::AddMark(const Mark &mark){
     }
 }
 
-void Collector::DeleteMark(unsigned i){
-    if (i >= size || i < 0) return;
-
-    MarkNode* pre = nullptr;
-    MarkNode* cur = head;
-
-    for (int j = 0 ; j < i; j++){
-        pre = cur;
-        cur = cur->next;
-    }
-    pre->next = cur->next;
-
-    delete cur; 
-}
-
 bool Collector::DuplicateCheck(const Mark &mark){
     MarkNode* cur = head;
 
@@ -141,6 +133,29 @@ bool Collector::WrongMark(const Mark &mark){
     }
 
     return false;
+}
+
+void Collector::DeleteEmpty(){
+    MarkNode* cur = head;
+    MarkNode* prev = nullptr;
+
+    while (cur != nullptr) {
+        if (cur->data.amount == 0) {
+            MarkNode* toDelete = cur;
+            if (prev == nullptr) {
+                head = cur->next;
+                cur = head;
+            } else {
+                prev->next = cur->next;
+                cur = cur->next;
+            }
+            delete toDelete;
+            size--;
+        } else {
+            prev = cur;
+            cur = cur->next;
+        }
+    }
 }
 
 void Collector::print() {

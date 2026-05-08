@@ -12,68 +12,13 @@ Topic=Post Office
 Value=1500.00
 IsCancelled=0
 Amount=1
-IsTradeable=0
+IsTradeable=1
 
 [STAMP]
 Name=Inverted Jenny
 Topic=Aviation
 Value=850.00
 IsCancelled=0
-Amount=2
-IsTradeable=1
-
-[STAMP]
-Name=Space Pioneer
-Topic=Cosmos
-Value=45.25
-IsCancelled=1
-Amount=10
-IsTradeable=1
-
-[STAMP]
-Name=Royal Yacht
-Topic=Ships
-Value=120.00
-IsCancelled=0
-Amount=3
-IsTradeable=1
-
-[STAMP]
-Name=Red Mercury
-Topic=Newspapers
-Value=310.00
-IsCancelled=1
 Amount=1
 IsTradeable=1
 
-[STAMP]
-Name=Basler Taube
-Topic=Switzerland
-Value=420.75
-IsCancelled=0
-Amount=1
-IsTradeable=1
-
-[STAMP]
-Name=Z Grill
-Topic=Benjamin Franklin
-Value=980.00
-IsCancelled=1
-Amount=1
-IsTradeable=0
-
-[STAMP]
-Name=Swan River
-Topic=Western Australia
-Value=115.00
-IsCancelled=0
-Amount=5
-IsTradeable=1
-
-[STAMP]
-Name=Cape Triangle
-Topic=Hope Colony
-Value=210.00
-IsCancelled=1
-Amount=2
-IsTradeable=1
