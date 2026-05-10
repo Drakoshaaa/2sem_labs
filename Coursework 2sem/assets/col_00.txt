@@ -3,6 +3,30 @@ Name=Penny Black
 Topic=Queen Victoria
 Value=250.50
 IsCancelled=1
+Amount=1
+IsTradeable=1
+
+[STAMP]
+Name=Penny Black
+Topic=Queen Victoria
+Value=250.50
+IsCancelled=1
+Amount=1
+IsTradeable=1
+
+[STAMP]
+Name=Great_Migr
+Topic=Nature
+Value=12.30
+IsCancelled=1
+Amount=7
+IsTradeable=0
+
+[STAMP]
+Name=Penny Black
+Topic=Queen Victoria
+Value=300.00
+IsCancelled=1
 Amount=2
 IsTradeable=1
 

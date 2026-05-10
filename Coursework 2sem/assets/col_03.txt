@@ -1,0 +1,15 @@
+[STAMP]
+Name=Yellow_Tres
+Topic=Rarity
+Value=3000.00
+IsCancelled=0
+Amount=1
+IsTradeable=0
+
+[STAMP]
+Name=Eiffel_Tower
+Topic=Travel
+Value=18.00
+IsCancelled=1
+Amount=3
+IsTradeable=1

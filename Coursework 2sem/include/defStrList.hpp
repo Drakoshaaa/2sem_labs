@@ -2,6 +2,7 @@
 #define STRLIST
 
 #include <iostream>
+
 #include "const.hpp"
 
 using namespace std;
@@ -29,7 +30,7 @@ public:
     void AddStr(const char* str);
     bool isEqual(const StrList& other);
 
-    void print();
+    char* GetFullStr();
 
     StrList& operator=(const StrList &other);
 };
@@ -132,13 +133,23 @@ bool StrList::isEqual(const StrList& other){
     return true;
 }
 
-void StrList::print(){
+char* StrList::GetFullStr(){
     StrNode* cur = head;
 
+    int j = 0;
+    char* str = new char[fullsize + 1];
+
     while(cur != nullptr){
-        cout << cur->data;
+        for (int i = 0; i < N; i++, j++){
+            str[j] = cur->data[i];
+        }
+
         cur = cur->next;
     }
+
+    str[fullsize] = '\0';
+
+    return str;
 }
 
 StrList& StrList::operator=(const StrList &other) {

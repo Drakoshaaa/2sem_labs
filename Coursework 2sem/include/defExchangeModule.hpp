@@ -1,11 +1,12 @@
 #ifndef EXCHANGE
 #define EXCNAHGE
 
-#include <iostream>
+#include <fstream>
 #include <cmath>
 
 #include "defMark.hpp"
 #include "defCollector.hpp"
+#include "defTable.hpp"
 
 using namespace std;
 
@@ -25,10 +26,12 @@ public:
     ~ExchangeManager();
     void clearPools();
     
-    bool Process(Collector& mainCol, Collector& offerCol);
+    bool Process(Collector& mainCol, Collector& offerCol, ofstream &fout, ofstream &protocol);
     void MakePool(Collector& mainCol, Collector& offerCol);
     bool findExchange(int idx, float currentSum);
-    void makeExchange(Collector& mainCol, Collector& offerCol);
+    void makeExchange(Collector& mainCol, Collector& offerCol, ofstream &out);
+
+    void printFound(ofstream &fout, ofstream &protocol);
 };
 
 // ---------------------------------------------------------------------------
@@ -72,7 +75,6 @@ void ExchangeManager::MakePool(Collector& mainCol, Collector& offerCol){
         if (offerCol[i].isTradeable) offerPoolSize++;
     }
 
-    cout << "\nРазмер OfferPool: " << offerPoolSize;
     offerPool = new Mark*[offerPoolSize];
 
     idx = 0;
@@ -83,17 +85,25 @@ void ExchangeManager::MakePool(Collector& mainCol, Collector& offerCol){
     }
 
     MatchCounts = new int[mainPoolSize];
+    for (int i = 0; i < mainPoolSize; i++) {
+        MatchCounts[i] = 0;
+    }
 
     targetSum = offerCol.GetTotalValue();
 }
 
-bool ExchangeManager::Process(Collector& mainCol, Collector& offerCol){
+bool ExchangeManager::Process(Collector& mainCol, Collector& offerCol, ofstream &fout, ofstream &protocol){
     MakePool(mainCol, offerCol);
 
     if (mainCol.GetTotalValue() < targetSum) return false;
-    
+
     if (findExchange(0, 0)){
-        makeExchange(mainCol, offerCol);
+        printFound(fout, protocol);
+        makeExchange(mainCol, offerCol, protocol);
+
+        fout << "Обмен марок произошёл успешно.\n";
+        protocol << "Обмен марок произошёл успешно.\n";
+
         return true;
     } else return false;
 }
@@ -115,17 +125,46 @@ bool ExchangeManager::findExchange(int idx, float currentSum){
     return false;
 }
 
-void ExchangeManager::makeExchange(Collector& mainCol, Collector& offerCol){
+void ExchangeManager::makeExchange(Collector& mainCol, Collector& offerCol, ofstream &out){
     for (int i = 0; i < mainPoolSize; i++){
         if (MatchCounts[i] > 0){
             mainPool[i]->amount -= MatchCounts[i];
         }
     }
+
     mainCol.DeleteEmpty();
 
     for (int i = 0; i < offerPoolSize; i++){
-        mainCol.AddMark(*offerPool[i]);
+        out << "\nСледующая марка была отправлена в коллекцию в ходе обмена:\n";
+        TableHeader(out);
+        offerPool[i]->printMark(out);
+        TableBottom(out);
+        mainCol.AddMark(*offerPool[i], out);
     }
+}
+
+void ExchangeManager::printFound(ofstream &fout, ofstream &protocol){
+    fout << "\n\n        В коллекции главного филателиста найдены следующие марки для обмена:\n";
+    protocol << "\n\n        В коллекции главного филателиста найдены следующие марки для обмена:\n";
+    TableHeader(fout);
+    TableHeader(protocol);
+    
+    for (int i = 0; i < mainPoolSize; i++){
+        if (MatchCounts[i] > 0){
+            Mark temp;
+            temp = *mainPool[i];
+            temp.amount = MatchCounts[i];
+
+            temp.printMark(fout);
+            temp.printMark(protocol);
+        }
+    }
+
+    TableBottom(fout);
+    TableBottom(protocol);
+
+    fout << endl << endl;
+    protocol << endl << endl;
 }
 
 #endif

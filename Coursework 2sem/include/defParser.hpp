@@ -6,11 +6,12 @@
 #include "const.hpp"
 #include "defMark.hpp"
 #include "defCollector.hpp"
+#include "defTable.hpp"
 
 using namespace std;
 
 int WhichField(const char* buffer);
-bool Parser(Collector &col, unsigned num);
+bool Parser(Collector &col, unsigned num, ofstream &out);
 
 // --------------------------------------------------------------------------------
 
@@ -65,7 +66,7 @@ int WhichField(const char* buffer){
     else return -1;
 }
 
-bool Parser(Collector &col, unsigned num){
+bool Parser(Collector &col, unsigned num, ofstream &out){
     char FileinTemplate[] = "assets/col_00.txt";
 
     FileinTemplate[11] = (char)((num / 10) + '0'); // Десятки
@@ -151,7 +152,14 @@ bool Parser(Collector &col, unsigned num){
             }
 
             if (fieldsAmount < 6) continue;
-            else col.AddMark(mark);
+            else {
+                out << "\nСледующая прочитанная марка была отправлена на проверку в коллекцию:\n";
+                TableHeader(out);
+                mark.printMark(out);
+                TableBottom(out);
+
+                col.AddMark(mark, out);
+            }
         }
     }
 
