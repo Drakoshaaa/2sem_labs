@@ -1,156 +1,140 @@
 #include <fstream>
+#include <cmath>
 
 #include "defMark.hpp"
-#include "defStrList.hpp"
 #include "defCollector.hpp"
+#include "defExchangeModule.hpp"
 #include "defTable.hpp"
 
-Collector::~Collector() {
-    clear();
+using namespace std;
+
+ExchangeManager::~ExchangeManager(){
+    clearPools();
 }
 
-void Collector::clear(){
-    MarkNode* cur = head;
+void ExchangeManager::clearPools(){
+    delete[] mainPool;
+    mainPool = nullptr;
 
-    while(cur != nullptr){
-        MarkNode* pre = cur;
+    delete[] offerPool;
+    offerPool = nullptr;
 
-        cur = cur->next;
+    delete[] MatchCounts;
+    MatchCounts = nullptr;
 
-        delete pre;
-    }
+    mainPoolSize = 0;
+    offerPoolSize = 0;
+    targetSum = 0;
 }
 
-MarkNode* Collector::GetHead(){
-    return head;
-}
-
-unsigned Collector::GetSize(){
-    return size;
-}
-
-float Collector::GetTotalValue(){
-    float temp = 0;
-
-    MarkNode* cur = head;
-    while(cur != nullptr){
-        if (cur->data.isTradeable){
-            temp += cur->data.value * cur->data.amount;
-        }
-
-        cur = cur->next;
+void ExchangeManager::MakePool(Collector& mainCol, Collector& offerCol){
+    // Заполняем основную коллекцию
+    for (int i = 0; i < mainCol.GetSize(); i++) {
+        if (mainCol[i].isTradeable) mainPoolSize++;
     }
 
-    return temp;
-}
+    mainPool = new Mark*[mainPoolSize];
 
-void Collector::PushFront(){
-    MarkNode* newNode = new MarkNode;
-    newNode->next = head;
-    head = newNode;
-    size++;
-}
-
-void Collector::AddMark(const Mark &mark, ofstream &out){
-    if (!DuplicateCheck(mark)){
-        if (!WrongMark(mark)){
-            PushFront();
-            out << "Марка была успешно добавлена в коллекцию.\n";
-            head->data = mark;
-            return;
-        }
-    }
-    else {
-        MarkNode* cur = head;
-
-        while (cur != nullptr){
-            if (cur->data == mark){
-                cur->data.amount += mark.amount;
-                out << "Марка была успешно добавлена в коллекцию.\n";
-                return;
-            }
-            
-            cur = cur->next;
+    int idx = 0;
+    for (int i = 0; i < mainCol.GetSize(); i++) {
+        if (mainCol[i].isTradeable) {
+            mainPool[idx++] = &mainCol[i];
         }
     }
 
-    out << "Марка не была добавлена в коллекцию, т.к. марка с таким названием уже была добавлена с другими полями.\n";
-}
-
-bool Collector::DuplicateCheck(const Mark &mark){
-    MarkNode* cur = head;
-
-    while(cur != nullptr){
-        if (cur->data == mark) {
-            return true;
-        } 
-
-        cur = cur->next;
+    // Заполняем коллекцию для обмена
+    for (int i = 0; i < offerCol.GetSize(); i++) {
+        if (offerCol[i].isTradeable) offerPoolSize++;
     }
 
+    offerPool = new Mark*[offerPoolSize];
+
+    idx = 0;
+    for (int i = 0; i < offerCol.GetSize(); i++) {
+        if (offerCol[i].isTradeable) {
+            offerPool[idx++] = &offerCol[i];
+        }
+    }
+
+    MatchCounts = new int[mainPoolSize];
+    for (int i = 0; i < mainPoolSize; i++) {
+        MatchCounts[i] = 0;
+    }
+
+    targetSum = offerCol.GetTotalValue();
+}
+
+bool ExchangeManager::Process(Collector& mainCol, Collector& offerCol, ofstream &fout, ofstream &protocol){
+    MakePool(mainCol, offerCol);
+
+    if (mainCol.GetTotalValue() < targetSum) return false;
+
+    if (findExchange(0, 0)){
+        printFound(fout, protocol);
+        makeExchange(mainCol, offerCol, protocol);
+
+        fout << "Обмен марок произошёл успешно.\n";
+        protocol << "Обмен марок произошёл успешно.\n";
+
+        return true;
+    } else return false;
+}
+
+bool ExchangeManager::findExchange(int idx, float currentSum){
+    if (abs(targetSum - currentSum) < EPS) return true;
+
+    if (currentSum > targetSum + EPS || idx >= mainPoolSize) return false;
+
+    for (int num = mainPool[idx]->amount ; num >= 0 ; num--){
+        MatchCounts[idx] = num;
+
+        float nextSum = currentSum + (mainPool[idx]->value * float(num));
+
+        if (findExchange(idx + 1, nextSum)) return true;
+    }
+
+    MatchCounts[idx] = 0;
     return false;
 }
 
-bool Collector::WrongMark(const Mark &mark){
-    MarkNode* cur = head;
-
-    while(cur != nullptr){
-        if (cur->data.name.isEqual(mark.name)){
-            return true;
-        } 
-
-        cur = cur->next;
-    }
-
-    return false;
-}
-
-void Collector::DeleteEmpty(){
-    MarkNode* cur = head;
-    MarkNode* prev = nullptr;
-
-    while (cur != nullptr) {
-        if (cur->data.amount == 0) {
-            MarkNode* toDelete = cur;
-            if (prev == nullptr) {
-                head = cur->next;
-                cur = head;
-            } else {
-                prev->next = cur->next;
-                cur = cur->next;
-            }
-            delete toDelete;
-            size--;
-        } else {
-            prev = cur;
-            cur = cur->next;
+void ExchangeManager::makeExchange(Collector& mainCol, Collector& offerCol, ofstream &out){
+    for (int i = 0; i < mainPoolSize; i++){
+        if (MatchCounts[i] > 0){
+            mainPool[i]->amount -= MatchCounts[i];
         }
     }
+
+    mainCol.DeleteEmpty();
+
+    for (int i = 0; i < offerPoolSize; i++){
+        out << "\nСледующая марка была отправлена в коллекцию в ходе обмена:\n";
+        TableHeader(out);
+        offerPool[i]->printMark(out);
+        TableBottom(out);
+        mainCol.AddMark(*offerPool[i], out);
+    }
 }
 
-void Collector::printTable(ofstream &out) {
-    TableHeader(out);
+void ExchangeManager::printFound(ofstream &fout, ofstream &protocol){
+    fout << "\n\n        В коллекции главного филателиста найдены следующие марки для обмена:\n";
+    protocol << "\n\n        В коллекции главного филателиста найдены следующие марки для обмена:\n";
+    TableHeader(fout);
+    TableHeader(protocol);
+    
+    for (int i = 0; i < mainPoolSize; i++){
+        if (MatchCounts[i] > 0){
+            Mark temp;
+            temp = *mainPool[i];
+            temp.amount = MatchCounts[i];
 
-    // Вывод данных из узлов списка
-    MarkNode* temp = head;
-    while (temp != nullptr) {
-        temp->data.printMark(out);
-
-        temp = temp->next;
+            temp.printMark(fout);
+            temp.printMark(protocol);
+        }
     }
 
-    TableBottom(out);
-}
+    TableBottom(fout);
+    TableBottom(protocol);
 
-
-Mark& Collector::operator[](const unsigned i){
-    if (i >= size || i < 0) return head->data;
-
-    MarkNode* cur = head;
-
-    for (int j = 0 ; j < i; j++){
-        cur = cur->next;
-    }
-
-    return cur->data;
+    fout << endl << endl;
+    protocol << endl << endl;
 }
